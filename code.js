@@ -163,7 +163,8 @@ window.addEventListener('pointerup', function(event) {
 	if ('bluetooth' in navigator) {
 		console.log('Web Bluetooth API is available.')
 		// Request access to Bluetooth devices
-		navigator.bluetooth.requestDevice({acceptAllDevices: true})
+		// navigator.bluetooth.requestDevice({acceptAllDevices: true})
+		navigator.bluetooth.requestDevice({filters: [{services: [0x001]}]})
 		.then(device => {
 			// Device(s) found, do something with them
 			console.log('Connected Bluetooth device:', device.name);
