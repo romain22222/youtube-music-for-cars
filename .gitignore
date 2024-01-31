@@ -1,5 +1,5 @@
 config/config.txt
 venv
-/index.html
+#/index.html
 playlists
 .idea

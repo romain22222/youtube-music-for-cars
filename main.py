@@ -40,13 +40,14 @@ def generate_html_page(video_ids, videoTitles, videoArtists):
 		<button onclick="nextTrack()">Next Track</button>
 	</div>
 </div>
+<div id="debugKey"></div>
 <script>
 	let videoIds = {json.dumps(video_ids)};
 	let videoTitles = {json.dumps(videoTitles)};
 	let videoArtists = {json.dumps(videoArtists)};
 </script>
 <script type="text/javascript" src="https://www.youtube.com/iframe_api"></script>
-<script src="code.js"></script>
+<script>{"".join(open("code.js", 'r').readlines())}</script>
 	"""
 
 	return html_content
