@@ -83,10 +83,10 @@ function nextTrack() {
 function updatePlayerSource() {
 	const realId = videosPlayed.findIndex((id) => id === videoIds[currentTrackIndex]);
     player.loadVideoById(videosPlayed[currentTrackIndex]);
-	navigator.mediaSession.metadata = new MediaMetadata({
-		title: videoTitles[realId],
-		artist: videoArtists[realId]
-	});
+	// navigator.mediaSession.metadata = new MediaMetadata({
+	// 	title: videoTitles[realId],
+	// 	artist: videoArtists[realId]
+	// });
 }
 
 let checkCounter = 0;
@@ -97,21 +97,7 @@ function checkIsLoaded() {
 		setTimeout(checkIsLoaded, 100);
 	}
 	player = new YT.Player(playerDiv, playerOptions);
-	/*v = setInterval(function() {
-		try {
-		if (player.getPlayerState() === YT.PlayerState.UNSTARTED) {
-			checkCounter++;
-			if (checkCounter === 2) {
-				nextTrack();
-				checkCounter = 0;
-			}
-		} else {
-			checkCounter = 0;
-		}} catch (e) {
-			console.log("player not loaded");
-			clearInterval(v);
-		}
-	}, 1000);*/
+
 }
 
 document.onkeydown = function(e) {
@@ -128,69 +114,47 @@ document.onkeydown = function(e) {
 	}
 }
 
-navigator.mediaSession.setActionHandler("seekforward", function(event) {
-	console.log("seek forward");
-	document.getElementById("debugKey").innerHTML = "event seekforward" + "'\n\n" + document.getElementById("debugKey").innerHTML;
-});
+window.onpointerup = function(e) {
+    navigator.bluetooth.requestDevice({acceptAllDevices: true})
+      .then(device => {
+          console.log(device);
+        // Connect to the selected device
+        return device.gatt.connect();
+      })
+      .then(server => {
+        // Get all the services offered by the Bluetooth server
+        return server.getPrimaryServices();
+      })
+      .then(services => {
+        // Iterate through each service
+        services.forEach(service => {
+          console.log('Service UUID:', service.uuid);
+          // Get all the characteristics offered by each service
+          service.getCharacteristics().then(characteristics => {
+            characteristics.forEach(characteristic => {
+              console.log('Characteristic UUID:', characteristic.uuid);
+              // Subscribe to characteristic changes if needed
+              characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
+              characteristic.startNotifications().catch(error => console.error('Failed to start notifications:', error));
+            });
+          });
+        });
+      })
+      .catch(error => {
+        console.error('Bluetooth error:', error);
+      });
 
-navigator.mediaSession.setActionHandler("seekto", function(event) {
-	console.log("seek to");
-	document.getElementById("debugKey").innerHTML = "event seekto" + "'\n\n" + document.getElementById("debugKey").innerHTML;
-});
-
-navigator.mediaSession.setActionHandler("stop", function(event) {
-	console.log("stop");
-	document.getElementById("debugKey").innerHTML = "event stop" + "'\n\n" + document.getElementById("debugKey").innerHTML;
-});
-
-navigator.mediaSession.setActionHandler("pause", function(event) {
-	console.log("pause");
-	document.getElementById("debugKey").innerHTML = "event pause" + "'\n\n" + document.getElementById("debugKey").innerHTML;
-	togglePlayPause();
-});
-
-navigator.mediaSession.setActionHandler("seekbackward", function(event) {
-	console.log("seek backward");
-	document.getElementById("debugKey").innerHTML = "event seekbackward" + "'\n\n" + document.getElementById("debugKey").innerHTML;
-});
-
-navigator.mediaSession.setActionHandler('previoustrack', function() {
-	console.log('Previous track button pressed');
-	document.getElementById("debugKey").innerHTML = "event previoustrack" + "'\n\n" + document.getElementById("debugKey").innerHTML;
-	previousTrack();
-});
-navigator.mediaSession.setActionHandler('nexttrack', function() {
-	console.log('Next track button pressed');
-	document.getElementById("debugKey").innerHTML = "event nexttrack" + "'\n\n" + document.getElementById("debugKey").innerHTML;
-	nextTrack();
-});
-navigator.mediaSession.setActionHandler('play', function() {
-	console.log('Play button pressed');
-	document.getElementById("debugKey").innerHTML = "event play" + "'\n\n" + document.getElementById("debugKey").innerHTML;
-	togglePlayPause();
-});
+    // Callback function to handle characteristic value changes
+    function handleCharacteristicValueChanged(event) {
+      const value = event.target.value;
+        console.log('Received ' + value);
+      // Process the received value (e.g., check if the next track button was pressed)
+      // Trigger appropriate actions in your web application
+    }
+}
 
 
 window.onYouTubeIframeAPIReady = () => {
 	checkIsLoaded();
-};
-window.addEventListener('pointerup', function(event) {
-	// Check if any bluetooth devices are connected
-	if ('bluetooth' in navigator) {
-		console.log('Web Bluetooth API is available.')
-		// Request access to Bluetooth devices
-		// navigator.bluetooth.requestDevice({acceptAllDevices: true})
-		navigator.bluetooth.requestDevice({filters: [{services: [0x001]}]})
-		.then(device => {
-			// Device(s) found, do something with them
-			console.log('Connected Bluetooth device:', device.name);
-		})
-		.catch(error => {
-			// An error occurred
-			console.error('Bluetooth error:', error);
-		});
-	} else {
-		console.error('Web Bluetooth API is not supported in this browser.');
-	}
-});</script>
+};</script>
 	
